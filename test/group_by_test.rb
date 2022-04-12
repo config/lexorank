@@ -21,14 +21,14 @@ class GroupByTest < ActiveSupport::TestCase
   end
 
   should 'resolve attribute names' do
-    assert_equal :page_id, GroupedParagraph.ranking_group_by
+    assert_equal [:page_id], GroupedParagraph.ranking_group_by
 
     class Paragraph2 < ActiveRecord::Base
       self.table_name = 'paragraphs'
       belongs_to :page
       rank!(group_by: :page)
     end
-    assert_equal :page_id, Paragraph2.ranking_group_by
+    assert_equal [:page_id], Paragraph2.ranking_group_by
   end
 
   should 'warn on invalid ranking field' do

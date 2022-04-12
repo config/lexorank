@@ -12,9 +12,10 @@ module Lexorank::Rankable
     def rank!(field: :rank, group_by: nil)
       @ranking_column = check_column(field)
       if group_by
-        @ranking_group_by = check_column(group_by)
-        unless @ranking_group_by
+        @ranking_group_by = Array(group_by).map { |col| check_column(col) }.compact
+        if @ranking_group_by.empty?
           warn "The supplied grouping by \"#{group_by}\" is neither a column nor an association of the model!"
+          @ranking_group_by = nil
         end
       end
 
@@ -50,7 +51,10 @@ module Lexorank::Rankable
     def move_to(position)
       collection = self.class.ranked
       if self.class.ranking_group_by.present?
-        collection = collection.where("#{self.class.ranking_group_by}": send(self.class.ranking_group_by))
+        conditions = self.class.ranking_group_by.each_with_object({}) do |col, conds|
+          conds[col.to_s] = send(col)
+        end
+        collection = collection.where(conditions)
       end
 
       # exceptions:
